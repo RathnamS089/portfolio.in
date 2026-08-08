@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Rathnam S - Developer Portfolio">
+  <title>Rathnam S | Developer Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0a0e14;
+      --bg-secondary: #111820;
+      --bg-tertiary: #1a2330;
+      --fg-primary: #c9d1d9;
+      --fg-secondary: #8b949e;
+      --fg-muted: #6e7681;
+      --accent-green: #39ff14;
+      --accent-cyan: #00d9ff;
+      --accent-amber: #ffb800;
+      --accent-red: #ff4444;
+      --accent-yellow: #ffcc00;
+      --accent-blue: #58a6ff;
+      --border-color: #30363d;
+      --terminal-green: #00ff88;
+      --error-red: #ff6b6b;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    body {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      background: var(--bg-primary);
+      color: var(--fg-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      line-height: 1.6;
+      font-size: 15px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .terminal-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      max-width: 1000px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .terminal-header {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px 8px 0 0;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: relative;
+    }
+
+    .window-controls {
+      display: flex;
+      gap: 8px;
+    }
+
+    .window-btn {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+
+    .window-btn:hover {
+      transform: scale(1.15);
+    }
+
+    .window-btn:active {
+      transform: scale(0.95);
+    }
+
+    .btn-close { background: #ff5f57; }
+    .btn-minimize { background: #ffbd2e; }
+    .btn-maximize { background: #28ca42; }
+
+    .terminal-title {
+      flex: 1;
+      text-align: center;
+      font-size: 13px;
+      color: var(--fg-secondary);
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .terminal-title::before {
+      content: 'rathnam@portfolio:~$';
+      color: var(--accent-green);
+      margin-right: 8px;
+    }
+
+    .terminal-body {
+      flex: 1;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+      overflow-y: auto;
+      padding: 20px;
+      min-height: 500px;
+      max-height: 70vh;
+      position: relative;
+    }
+
+    .terminal-output {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 14px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .terminal-line {
+      margin-bottom: 4px;
+    }
+
+    .prompt-line {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .prompt-prefix {
+      color: var(--accent-green);
+      font-weight: 500;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .input-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .command-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--fg-primary);
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 14px;
+      line-height: 1.7;
+      min-width: 0;
+      caret-color: var(--accent-green);
+    }
+
+    .command-input::placeholder {
+      color: var(--fg-muted);
+      opacity: 0.5;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 8px;
+      height: 18px;
+      background: var(--accent-green);
+      animation: blink 1s infinite;
+      vertical-align: text-bottom;
+      margin-left: 2px;
+    }
+
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .cursor { animation: none; opacity: 1; }
+    }
+
+    .command-history {
+      position: absolute;
+      bottom: 100%;
+      left: 0;
+      right: 0;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-bottom: none;
+      border-radius: 8px 8px 0 0;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 10;
+      display: none;
+      padding: 8px;
+      gap: 4px;
+      flex-direction: column;
+    }
+
+    .command-history.show {
+      display: flex;
+    }
+
+    .history-item {
+      padding: 6px 10px;
+      cursor: pointer;
+      border-radius: 4px;
+      color: var(--fg-secondary);
+      font-size: 13px;
+      transition: background 0.1s ease, color 0.1s ease;
+    }
+
+    .history-item:hover {
+      background: var(--bg-tertiary);
+      color: var(--fg-primary);
+    }
+
+    .suggestions-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+      padding: 0 4px;
+    }
+
+    .suggestion-chip {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      color: var(--accent-cyan);
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .suggestion-chip:hover {
+      background: var(--accent-cyan);
+      color: var(--bg-primary);
+      border-color: var(--accent-cyan);
+      transform: translateY(-1px);
+    }
+
+    .suggestion-chip:focus-visible {
+      outline: 2px solid var(--accent-cyan);
+      outline-offset: 2px;
+    }
+
+    .output-text {
+      color: var(--fg-primary);
+    }
+
+    .output-header {
+      color: var(--accent-cyan);
+      font-weight: 600;
+      margin-bottom: 8px;
+      font-size: 15px;
+    }
+
+    .output-subheader {
+      color: var(--accent-amber);
+      font-weight: 500;
+      margin: 12px 0 6px;
+      font-size: 14px;
+    }
+
+    .output-list {
+      margin-left: 16px;
+      color: var(--fg-secondary);
+    }
+
+    .output-list li {
+      margin-bottom: 4px;
+      position: relative;
+      padding-left: 16px;
+    }
+
+    .output-list li::before {
+      content: '▸';
+      position: absolute;
+      left: 0;
+      color: var(--accent-green);
+    }
+
+    .skill-category {
+      margin-bottom: 10px;
+    }
+
+    .skill-category-name {
+      color: var(--accent-amber);
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .skill-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-left: 16px;
+    }
+
+    .skill-tag {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      color: var(--fg-primary);
+      padding: 3px 10px;
+      border-radius: 3px;
+      font-size: 12px;
+      transition: all 0.15s ease;
+    }
+
+    .skill-tag:hover {
+      border-color: var(--accent-green);
+      color: var(--accent-green);
+    }
+
+    .project-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 16px;
+      margin-bottom: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .project-card:hover {
+      border-color: var(--accent-cyan);
+      transform: translateX(4px);
+    }
+
+    .project-name {
+      color: var(--accent-cyan);
+      font-weight: 600;
+      font-size: 15px;
+      margin-bottom: 6px;
+    }
+
+    .project-desc {
+      color: var(--fg-secondary);
+      font-size: 13px;
+      margin-bottom: 10px;
+      line-height: 1.6;
+    }
+
+    .project-links {
+      display: flex;
+      gap: 12px;
+    }
+
+    .project-link {
+      color: var(--accent-green);
+      text-decoration: none;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: color 0.15s ease;
+    }
+
+    .project-link:hover {
+      color: var(--accent-cyan);
+      text-decoration: underline;
+    }
+
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      color: var(--fg-secondary);
+    }
+
+    .contact-item a {
+      color: var(--accent-cyan);
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+
+    .contact-item a:hover {
+      color: var(--accent-green);
+      text-decoration: underline;
+    }
+
+    .contact-icon {
+      color: var(--accent-green);
+      width: 18px;
+      text-align: center;
+    }
+
+    .error-text {
+      color: var(--error-red);
+    }
+
+    .success-text {
+      color: var(--accent-green);
+    }
+
+    .muted-text {
+      color: var(--fg-muted);
+    }
+
+    .ascii-art {
+      color: var(--accent-green);
+      font-size: 11px;
+      line-height: 1.3;
+      margin-bottom: 16px;
+      font-family: 'JetBrains Mono', monospace;
+      white-space: pre;
+      overflow-x: auto;
+    }
+
+    .footer {
+      padding: 20px;
+      text-align: center;
+      color: var(--fg-muted);
+      font-size: 12px;
+      border-top: 1px solid var(--border-color);
+      margin-top: auto;
+    }
+
+    .footer a {
+      color: var(--accent-cyan);
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    .kbd {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 3px;
+      padding: 1px 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--accent-amber);
+    }
+
+    @media (max-width: 768px) {
+      .terminal-wrapper {
+        padding: 10px;
+      }
+
+      .terminal-body {
+        padding: 16px;
+        min-height: 60vh;
+        max-height: 75vh;
+      }
+
+      .terminal-title::before {
+        content: '$';
+        margin-right: 6px;
+      }
+
+      .prompt-prefix {
+        font-size: 13px;
+      }
+
+      .command-input {
+        font-size: 13px;
+      }
+
+      .suggestions-bar {
+        justify-content: center;
+      }
+
+      .ascii-art {
+        font-size: 9px;
+      }
+
+      .project-links {
+        flex-direction: column;
+        gap: 8px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .terminal-wrapper {
+        padding: 8px;
+      }
+
+      .terminal-body {
+        padding: 12px;
+      }
+
+      .window-btn {
+        width: 12px;
+        height: 12px;
+      }
+
+      .terminal-title {
+        font-size: 11px;
+      }
+
+      .skill-tags {
+        margin-left: 8px;
+      }
+
+      .output-list {
+        margin-left: 8px;
+      }
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .typing-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 18px;
+      background: var(--accent-green);
+      animation: blink 1s infinite;
+      vertical-align: text-bottom;
+    }
+  </style>
+</head>
+<body>
+  <div class="terminal-wrapper" role="application" aria-label="Terminal Portfolio">
+    <header class="terminal-header" role="banner">
+      <div class="window-controls" aria-label="Window controls">
+        <button class="window-btn btn-close" aria-label="Close" tabindex="-1"></button>
+        <button class="window-btn btn-minimize" aria-label="Minimize" tabindex="-1"></button>
+        <button class="window-btn btn-maximize" aria-label="Maximize" tabindex="-1"></button>
+      </div>
+      <div class="terminal-title" aria-live="polite">portfolio.term</div>
+    </header>
+
+    <main class="terminal-body" id="terminalBody" role="log" aria-live="polite" aria-label="Terminal output">
+      <div class="terminal-output" id="terminalOutput"></div>
+      <div class="command-history" id="commandHistory" role="listbox" aria-label="Command history"></div>
+    </main>
+
+    <div class="suggestions-bar" id="suggestionsBar" role="group" aria-label="Quick commands"></div>
+
+    <div class="prompt-line" role="group" aria-label="Command input">
+      <span class="prompt-prefix" id="promptPrefix">rathnam@portfolio:~$</span>
+      <div class="input-wrapper">
+        <input
+          type="text"
+          class="command-input"
+          id="commandInput"
+          autocomplete="off"
+          spellcheck="false"
+          placeholder="Type 'help' for available commands..."
+          aria-label="Command input"
+          aria-describedby="inputHint"
+        >
+        <span class="cursor" id="cursor" aria-hidden="true"></span>
+      </div>
+    </div>
+    <span id="inputHint" class="hidden">Press Enter to execute, Up/Down for history, Tab for suggestions</span>
+  </div>
+
+  <footer class="footer" role="contentinfo">
+    Built with <span style="color: var(--accent-red);">♥</span> by Rathnam S •
+    <a href="https://github.com/RathnamS089" target="_blank" rel="noopener noreferrer">GitHub</a> •
+    <a href="https://www.linkedin.com/in/rathnam-sundaram-2b7160322/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+  </footer>
+
+  <script>
+    (function() {
+      'use strict';
+
+      const STATE = {
+        history: [],
+        historyIndex: -1,
+        currentInput: '',
+        commands: {
+          help: {
+            description: 'List all available commands',
+            usage: 'help',
+            execute: () => showHelp()
+          },
+          about: {
+            description: 'Display short bio',
+            usage: 'about',
+            execute: () => showAbout()
+          },
+          skills: {
+            description: 'List technical skills and tech stack',
+            usage: 'skills',
+            execute: () => showSkills()
+          },
+          projects: {
+            description: 'Show portfolio projects with links',
+            usage: 'projects',
+            execute: () => showProjects()
+          },
+          contact: {
+            description: 'Display contact information',
+            usage: 'contact',
+            execute: () => showContact()
+          },
+          clear: {
+            description: 'Clear the terminal screen',
+            usage: 'clear',
+            execute: () => clearTerminal()
+          }
+        }
+      };
+
+      const ELEMENTS = {
+        output: document.getElementById('terminalOutput'),
+        input: document.getElementById('commandInput'),
+        cursor: document.getElementById('cursor'),
+        suggestionsBar: document.getElementById('suggestionsBar'),
+        commandHistory: document.getElementById('commandHistory'),
+        terminalBody: document.getElementById('terminalBody'),
+        promptPrefix: document.getElementById('promptPrefix')
+      };
+
+      const ASCII_LOGO = `
+██████╗ ███████╗███████╗██████╗  ██████╗ ████████╗██╗  ██╗
+██╔══██╗██╔════╝██╔════╝██╔══██╗██╔═══██╗╚══██╔══╝██║  ██║
+██████╔╝█████╗  █████╗  ██████╔╝██║   ██║   ██║   ███████║
+██╔══██╗██╔══╝  ██╔══╝  ██╔══██╗██║   ██║   ██║   ██╔══██║
+██║  ██║███████╗███████╗██║  ██║╚██████╔╝   ██║   ██║  ██║
+╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚═╝ ╚═════╝    ╚═╝   ╚═╝  ╚═╝`;
+
+      const SUGGESTION_COMMANDS = ['help', 'about', 'skills', 'projects', 'contact', 'clear'];
+
+      function init() {
+        renderSuggestions();
+        printWelcome();
+        setupEventListeners();
+        focusInput();
+      }
+
+      function printWelcome() {
+        appendOutput(`<span class="ascii-art">${escapeHtml(ASCII_LOGO)}</span>`);
+        appendOutput('<span class="output-header">Welcome to my interactive portfolio terminal!</span>');
+        appendOutput('<span class="muted-text">Type <span class="kbd">help</span> to see available commands, or click a suggestion below.</span>');
+        appendOutput('<span class="muted-text">Repository: <a href="https://github.com/RathnamS089" target="_blank" rel="noopener" style="color: var(--accent-cyan);">github.com/RathnamS089</a> (34 repos, 100+ NeetCode solutions)</span>');
+        printPrompt();
+      }
+
+      function appendOutput(html) {
+        const line = document.createElement('div');
+        line.className = 'terminal-line';
+        line.innerHTML = html;
+        ELEMENTS.output.appendChild(line);
+        scrollToBottom();
+      }
+
+      function printPrompt() {
+        const line = document.createElement('div');
+        line.className = 'terminal-line prompt-line';
+        line.innerHTML = `
+          <span class="prompt-prefix">rathnam@portfolio:~$</span>
+          <div class="input-wrapper">
+            <span class="cursor" aria-hidden="true"></span>
+          </div>
+        `;
+        ELEMENTS.output.appendChild(line);
+        scrollToBottom();
+      }
+
+      function clearTerminal() {
+        ELEMENTS.output.innerHTML = '';
+        STATE.historyIndex = STATE.history.length;
+        printWelcome();
+      }
+
+      function scrollToBottom() {
+        requestAnimationFrame(() => {
+          ELEMENTS.terminalBody.scrollTop = ELEMENTS.terminalBody.scrollHeight;
+        });
+      }
+
+      function focusInput() {
+        ELEMENTS.input.focus();
+      }
+
+      function renderSuggestions() {
+        ELEMENTS.suggestionsBar.innerHTML = SUGGESTION_COMMANDS.map(cmd => `
+          <button
+            class="suggestion-chip"
+            data-command="${cmd}"
+            aria-label="Run ${cmd} command"
+            tabindex="0"
+          >${cmd}</button>
+        `).join('');
+
+        ELEMENTS.suggestionsBar.querySelectorAll('.suggestion-chip').forEach(btn => {
+          btn.addEventListener('click', () => executeCommand(btn.dataset.command));
+          btn.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              executeCommand(btn.dataset.command);
+            }
+          });
+        });
+      }
+
+      function showHelp() {
+        appendOutput('<span class="output-header">Available Commands:</span>');
+        const maxLen = Math.max(...Object.keys(STATE.commands).map(k => k.length));
+        Object.entries(STATE.commands).forEach(([name, info]) => {
+          const padded = name.padEnd(maxLen);
+          appendOutput(`  <span class="success-text">${escapeHtml(padded)}</span>  ${escapeHtml(info.description)}`);
+        });
+        appendOutput('');
+        appendOutput('<span class="muted-text">Usage: <command> [args]</span>');
+        appendOutput('<span class="muted-text">Navigate history with <span class="kbd">↑</span>/<span class="kbd">↓</span>, autocomplete with <span class="kbd">Tab</span></span>');
+      }
+
+      function showAbout() {
+        appendOutput('<span class="output-header">About Me</span>');
+        appendOutput('<span class="output-text">');
+        appendOutput('  Hi, I\'m Rathnam S — a passionate Full Stack Developer');
+        appendOutput('  and ML Engineer with expertise in building scalable');
+        appendOutput('  web applications, RESTful APIs, and modern frontend');
+        appendOutput('  experiences. I also work on AI/ML projects including');
+        appendOutput('  NLP, computer vision, and LLM-powered applications.');
+        appendOutput('');
+        appendOutput('  I love clean code, developer tooling, and solving');
+        appendOutput('  complex problems with elegant solutions. When not');
+        appendOutput('  coding, you\'ll find me exploring new technologies,');
+        appendOutput('  contributing to open source, or reading tech blogs.');
+        appendOutput('</span>');
+        appendOutput('');
+        appendOutput('<span class="output-subheader">Education</span>');
+        appendOutput('<span class="output-text">');
+        appendOutput('  B.Tech — Manipal Institute of Technology, Bengaluru');
+        appendOutput('</span>');
+        appendOutput('');
+        appendOutput('<span class="output-subheader">Experience</span>');
+        appendOutput('<span class="muted-text">  Currently seeking full-time opportunities.</span>');
+        appendOutput('<span class="muted-text">  Open to internships and freelance projects.</span>');
+      }
+
+      function showSkills() {
+        appendOutput('<span class="output-header">Technical Skills & Tech Stack</span>');
+        
+        const skills = {
+          'Frontend': ['React', 'TypeScript', 'Next.js', 'Remix', 'Vite', 'Tailwind CSS', 'HTML5/CSS3', 'JavaScript (ES6+)'],
+          'Backend': ['Node.js', 'Express', 'Python', 'FastAPI', 'Supabase', 'PostgreSQL', 'REST APIs', 'WebSockets'],
+          'AI/ML': ['PyTorch', 'Hugging Face Transformers', 'BERT', 'CNN', 'RAG', 'ChromaDB', 'Groq API', 'LangChain', 'OpenCV'],
+          'DevOps & Tools': ['Docker', 'Git/GitHub', 'GitHub Actions', 'CI/CD', 'Vercel', 'Linux', 'Bun', 'CircuitJS'],
+          'Data Structures & Algorithms': ['C++', 'Python', 'TypeScript', 'LeetCode/NeetCode (100+ problems)'],
+          'Other': ['System Design', 'Microservices', 'Agile/Scrum', 'Prompt Engineering', 'Embedded Systems (CubeSat EPS)']
+        };
+
+        Object.entries(skills).forEach(([category, items]) => {
+          appendOutput(`<div class="skill-category">`);
+          appendOutput(`  <span class="skill-category-name">${escapeHtml(category)}</span>`);
+          appendOutput(`  <div class="skill-tags">${items.map(s => `<span class="skill-tag">${escapeHtml(s)}</span>`).join('')}</div>`);
+          appendOutput(`</div>`);
+        });
+      }
+
+      function showProjects() {
+        appendOutput('<span class="output-header">Featured Projects</span>');
+        
+        const projects = [
+          {
+            name: 'apple-news-app — Next.js News Aggregator',
+            desc: 'Full-stack news application built with Next.js 14, TypeScript, and Tailwind CSS. Features server-side rendering, API routes, and automated CI/CD with GitHub Actions. Deployed on Vercel with 116 commits showing active development.',
+            links: [
+              { label: 'GitHub', url: 'https://github.com/RathnamS089/apple-news-app' },
+              { label: 'Live Demo', url: 'https://apple-news-app.vercel.app' }
+            ]
+          },
+          {
+            name: 'Multi-Domain AI Support Agent (CLI)',
+            desc: 'HackerRank Orchestrate Hackathon submission. Secure RAG pipeline with ChromaDB, Groq API (Llama-3.1), and metadata firewall preventing cross-domain data leakage. Features zero-temperature anti-hallucination guardrails, strict JSON schema enforcement, and fraud/red-flag triage. Built with Python, LangChain, and Rich for terminal UI.',
+            links: [
+              { label: 'GitHub', url: 'https://github.com/RathnamS089/cli' }
+            ]
+          },
+          {
+            name: 'BERT Fine-Tuning on CoLA Dataset',
+            desc: 'End-to-end PyTorch pipeline for fine-tuning bert-base-uncased on the Corpus of Linguistic Acceptability. Implements cross-platform hardware acceleration (CUDA/MPS/CPU), automated data downloading, AdamW optimizer with warmup scheduling, gradient clipping, and detailed training statistics via Pandas.',
+            links: [
+              { label: 'GitHub', url: 'https://github.com/RathnamS089/BERT-Fine-Tuning-on-the-CoLA-Dataset' }
+            ]
+          },
+          {
+            name: 'MNIST Digit Classifier — MLP vs CNN',
+            desc: 'PyTorch deep learning project demonstrating the evolution from a Linear Multi-Layer Perceptron (96.67% accuracy) to a Convolutional Neural Network (98.56% accuracy), cutting error rate by more than half. Covers backpropagation, gradient descent, max pooling, spatial generalization, and feature extraction.',
+            links: [
+              { label: 'GitHub', url: 'https://github.com/RathnamS089/mint-digit-classifier' }
+            ]
+          },
+          {
+            name: 'Minimal CubeSat EPS Circuit Simulation',
+            desc: 'Electrical Power Subsystem simulation for a CubeSat, built in CircuitJS1 (browser-based SPICE). Designed custom RC timer circuits and MOSFET switches from scratch to model 90-minute orbit cycles (60min sun / 30min eclipse) with three distinct loads (OBC, Payload, TT&C). Demonstrates embedded systems and circuit design fundamentals.',
+            links: [
+              { label: 'GitHub', url: 'https://github.com/RathnamS089/Minimal-EPS-circuit-' },
+              { label: 'Results', url: 'https://github.com/RathnamS089/Minimal-EPS-circuit-/blob/main/RESULTS.md' }
+            ]
+          },
+          {
+            name: 'Pokédex TypeScript — React + Vite',
+            desc: 'Modern React 18 + TypeScript + Vite Pokédex application. Configured with Oxlint for fast linting, strict TypeScript settings, and component-based architecture. Demonstrates modern frontend tooling and API integration patterns.',
+            links: [
+              { label: 'GitHub', url: 'https://github.com/RathnamS089/pokedex-ts' }
+            ]
+          }
+        ];
+
+        projects.forEach(project => {
+          appendOutput(`
+            <div class="project-card">
+              <div class="project-name">${escapeHtml(project.name)}</div>
+              <div class="project-desc">${escapeHtml(project.desc)}</div>
+              <div class="project-links">
+                ${project.links.map(l => `<a href="${escapeHtml(l.url)}" target="_blank" rel="noopener noreferrer" class="project-link">${escapeHtml(l.label)}</a>`).join('')}
+              </div>
+            </div>
+          `);
+        });
+      }
+
+      function showContact() {
+        appendOutput('<span class="output-header">Contact Information</span>');
+        
+        const contacts = [
+          { icon: '✉', label: 'Email', value: 'butcherboys089@gmail.com', url: 'mailto:butcherboys089@gmail.com' },
+          { icon: '🐙', label: 'GitHub', value: 'github.com/RathnamS089', url: 'https://github.com/RathnamS089' },
+          { icon: '💼', label: 'LinkedIn', value: 'linkedin.com/in/rathnam-sundaram-2b7160322', url: 'https://www.linkedin.com/in/rathnam-sundaram-2b7160322/' },
+        ];
+
+        contacts.forEach(c => {
+          appendOutput(`
+            <div class="contact-item">
+              <span class="contact-icon">${c.icon}</span>
+              <span><strong>${escapeHtml(c.label)}:</strong></span>
+              <a href="${escapeHtml(c.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(c.value)}</a>
+            </div>
+          `);
+        });
+
+        appendOutput('');
+        appendOutput('<span class="muted-text">Feel free to reach out for collaborations, freelance work, or just to say hi!</span>');
+      }
+
+      function executeCommand(rawInput) {
+        const input = rawInput.trim();
+        if (!input) {
+          printPrompt();
+          return;
+        }
+
+        appendOutput(`<span class="prompt-prefix">rathnam@portfolio:~$</span> ${escapeHtml(input)}`);
+        STATE.history.push(input);
+        STATE.historyIndex = STATE.history.length;
+        updateHistoryDisplay();
+        ELEMENTS.input.value = '';
+
+        const [cmd, ...args] = input.split(/\s+/);
+        const command = STATE.commands[cmd.toLowerCase()];
+
+        if (command) {
+          try {
+            command.execute(args);
+          } catch (err) {
+            appendOutput(`<span class="error-text">Error executing command: ${escapeHtml(err.message)}</span>`);
+          }
+        } else {
+          appendOutput(`<span class="error-text">Command not found: ${escapeHtml(cmd)}</span>`);
+          appendOutput('<span class="muted-text">Type <span class="kbd">help</span> for available commands.</span>');
+        }
+
+        printPrompt();
+        focusInput();
+      }
+
+      function updateHistoryDisplay() {
+        ELEMENTS.commandHistory.innerHTML = STATE.history
+          .slice(-20)
+          .map((cmd, i) => `<div class="history-item" data-index="${STATE.history.length - 20 + i}" role="option">${escapeHtml(cmd)}</div>`)
+          .join('');
+
+        ELEMENTS.commandHistory.querySelectorAll('.history-item').forEach(item => {
+          item.addEventListener('click', () => {
+            ELEMENTS.input.value = item.textContent;
+            focusInput();
+          });
+        });
+      }
+
+      function handleKeydown(e) {
+        switch (e.key) {
+          case 'Enter':
+            e.preventDefault();
+            executeCommand(ELEMENTS.input.value);
+            break;
+          case 'ArrowUp':
+            e.preventDefault();
+            navigateHistory(-1);
+            break;
+          case 'ArrowDown':
+            e.preventDefault();
+            navigateHistory(1);
+            break;
+          case 'Tab':
+            e.preventDefault();
+            autocomplete();
+            break;
+          case 'Escape':
+            ELEMENTS.input.value = '';
+            STATE.historyIndex = STATE.history.length;
+            focusInput();
+            break;
+        }
+      }
+
+      function navigateHistory(direction) {
+        if (STATE.history.length === 0) return;
+        
+        STATE.historyIndex = Math.max(0, Math.min(STATE.history.length - 1, STATE.historyIndex + direction));
+        ELEMENTS.input.value = STATE.history[STATE.historyIndex] || '';
+        moveCursorToEnd();
+      }
+
+      function autocomplete() {
+        const value = ELEMENTS.input.value.toLowerCase();
+        const matches = SUGGESTION_COMMANDS.filter(c => c.startsWith(value));
+        
+        if (matches.length === 1) {
+          ELEMENTS.input.value = matches[0];
+          moveCursorToEnd();
+        } else if (matches.length > 1) {
+          appendOutput(`<span class="muted-text">${matches.join('  ')}</span>`);
+          printPrompt();
+        }
+      }
+
+      function moveCursorToEnd() {
+        const len = ELEMENTS.input.value.length;
+        ELEMENTS.input.setSelectionRange(len, len);
+      }
+
+      function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      function setupEventListeners() {
+        ELEMENTS.input.addEventListener('keydown', handleKeydown);
+        ELEMENTS.input.addEventListener('input', () => {
+          STATE.currentInput = ELEMENTS.input.value;
+        });
+
+        ELEMENTS.terminalBody.addEventListener('click', focusInput);
+        ELEMENTS.terminalBody.addEventListener('focusin', focusInput);
+
+        document.addEventListener('visibilitychange', () => {
+          if (!document.hidden) focusInput();
+        });
+
+        window.addEventListener('resize', scrollToBottom);
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+    })();
+  </script>
+</body>
+</html>
