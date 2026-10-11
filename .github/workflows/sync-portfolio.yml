@@ -1,0 +1,173 @@
+name: Sync portfolio content from GitHub
+
+on:
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync-portfolio:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Sync featured projects from profile repositories
+        env:
+          GITHUB_USER: RathnamS089
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import re
+          import urllib.request
+          from pathlib import Path
+
+          user = "RathnamS089"
+          token = os.environ.get("GITHUB_TOKEN", "").strip()
+          featured_repos = [
+              "apple-news-app",
+              "touch_grass",
+              "secondmind",
+              "neetcode-gpt",
+              "fintuneqwen0.5B",
+              "ecg-ingestion",
+              "Minimal-EPS-circuit-",
+          ]
+
+          fallback_descriptions = {
+              "apple-news-app": "News app built with Next.js and TypeScript, deployed on Vercel. Demonstrates modern frontend architecture, routing, and production deployment workflow.",
+              "touch_grass": "Desktop wellness companion built with React, TypeScript, Tauri, and Rust. Focused on screen-time tracking, break recommendations, and local app orchestration.",
+              "secondmind": "Local-first personal AI memory assistant built with Django and Ollama. Implements memory storage, semantic retrieval, and context-aware chat workflows.",
+              "neetcode-gpt": "GPT implementation built from scratch while completing the NeetCode ML curriculum, including attention, transformer blocks, tokenization, and training loops.",
+              "fintuneqwen0.5B": "Configuration-driven workflow for preparing datasets and fine-tuning Qwen 0.5B models on accessible hardware, covering preprocessing, training, and evaluation steps.",
+              "ecg-ingestion": "Real-time ECG ingestion pipeline using a Python producer, Apache Kafka, Node-RED processing, and InfluxDB storage for time-series visualization.",
+              "Minimal-EPS-circuit-": "Minimal CubeSat electrical power subsystem simulation in CircuitJS1. Models orbit-based charge/discharge behavior with custom RC timers and MOSFET switching.",
+          }
+
+          extra_links = {
+              "Minimal-EPS-circuit-": [
+                  {
+                      "label": "Results",
+                      "url": "https://github.com/RathnamS089/Minimal-EPS-circuit-/blob/main/RESULTS.md",
+                  }
+              ]
+          }
+
+          def js_escape(value: str) -> str:
+              return value.replace("\\", "\\\\").replace("'", "\\'")
+
+          api_url = f"https://api.github.com/users/{user}/repos?per_page=100&sort=updated"
+          headers = {
+              "Accept": "application/vnd.github+json",
+              "User-Agent": "portfolio-sync-workflow",
+          }
+          if token:
+              headers["Authorization"] = "Bearer " + token
+
+          request = urllib.request.Request(api_url, headers=headers)
+          with urllib.request.urlopen(request) as response:
+              repos = json.loads(response.read().decode("utf-8"))
+
+          repo_by_name = {repo["name"]: repo for repo in repos}
+          public_count = sum(1 for repo in repos if not repo.get("private", False))
+
+          projects = []
+          for repo_name in featured_repos:
+              repo = repo_by_name.get(repo_name)
+              if not repo:
+                  continue
+
+              desc = (repo.get("description") or fallback_descriptions.get(repo_name, "")).strip()
+              links = [{"label": "GitHub", "url": repo["html_url"]}]
+
+              homepage = (repo.get("homepage") or "").strip()
+              if homepage.startswith("https://") or homepage.startswith("http://"):
+                  links.append({"label": "Live Demo", "url": homepage})
+
+              links.extend(extra_links.get(repo_name, []))
+              projects.append({"name": repo_name, "desc": desc, "links": links})
+
+          if not projects:
+              raise RuntimeError("No featured repositories were resolved from GitHub API.")
+
+          generated_lines = ["          // AUTO_SYNC_PROJECTS_START"]
+          for project in projects:
+              generated_lines.append("          {")
+              generated_lines.append(f"            name: '{js_escape(project['name'])}',")
+              generated_lines.append(f"            desc: '{js_escape(project['desc'])}',")
+              generated_lines.append("            links: [")
+              for index, link in enumerate(project["links"]):
+                  comma = "," if index < len(project["links"]) - 1 else ""
+                  generated_lines.append(
+                      "              { label: '"
+                      + js_escape(link["label"])
+                      + "', url: '"
+                      + js_escape(link["url"])
+                      + "' }"
+                      + comma
+                  )
+              generated_lines.append("            ]")
+              generated_lines.append("          },")
+
+          if generated_lines[-1].endswith(","):
+              generated_lines[-1] = generated_lines[-1][:-1]
+
+          generated_lines.append("          // AUTO_SYNC_PROJECTS_END")
+          generated_block = "\n".join(generated_lines)
+
+          index_path = Path("index.html")
+          content = index_path.read_text(encoding="utf-8")
+
+          pattern = r"(const projects = \[\n)([\s\S]*?)(\n        \];)"
+          match = re.search(pattern, content)
+          if not match:
+              raise RuntimeError("Unable to locate projects array in index.html")
+
+          content = content[: match.start(2)] + generated_block + content[match.end(2) :]
+
+          welcome_pattern = r"\(\d+ public repos across web, AI/ML, data, and systems work\)"
+          content, replaced = re.subn(
+              welcome_pattern,
+              f"({public_count} public repos across web, AI/ML, data, and systems work)",
+              content,
+              count=1,
+          )
+
+          if replaced == 0:
+              raise RuntimeError("Unable to update repository count text in welcome output")
+
+          index_path.write_text(content, encoding="utf-8")
+          PY
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if git diff --quiet -- index.html; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create pull request
+        if: steps.changes.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: 'chore: sync portfolio projects from GitHub'
+          branch: 'automation/sync-portfolio-content'
+          delete-branch: true
+          title: 'chore: sync portfolio content from GitHub repositories'
+          body: |
+            Automated sync of `index.html` using current public repository metadata from `RathnamS089`.
+
+            Updated items:
+            - Featured project descriptions/links for the curated project set
+            - Public repository count in the welcome text
+
+            This PR was created automatically by `.github/workflows/sync-portfolio.yml`.
