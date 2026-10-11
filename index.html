@@ -656,7 +656,7 @@
         appendOutput(`<span class="ascii-art">${escapeHtml(ASCII_LOGO)}</span>`);
         appendOutput('<span class="output-header">Welcome to my interactive portfolio terminal!</span>');
         appendOutput('<span class="muted-text">Type <span class="kbd">help</span> to see available commands, or click a suggestion below.</span>');
-        appendOutput('<span class="muted-text">Repository: <a href="https://github.com/RathnamS089" target="_blank" rel="noopener" style="color: var(--accent-cyan);">github.com/RathnamS089</a> (34 repos, 100+ NeetCode solutions)</span>');
+        appendOutput('<span class="muted-text">Repository: <a href="https://github.com/RathnamS089" target="_blank" rel="noopener" style="color: var(--accent-cyan);">github.com/RathnamS089</a> (25 public repos across web, AI/ML, data, and systems work)</span>');
         printPrompt();
       }
 
@@ -733,16 +733,14 @@
       function showAbout() {
         appendOutput('<span class="output-header">About Me</span>');
         appendOutput('<span class="output-text">');
-        appendOutput('  Hi, I\'m Rathnam S — a passionate Full Stack Developer');
-        appendOutput('  and ML Engineer with expertise in building scalable');
-        appendOutput('  web applications, RESTful APIs, and modern frontend');
-        appendOutput('  experiences. I also work on AI/ML projects including');
-        appendOutput('  NLP, computer vision, and LLM-powered applications.');
+        appendOutput('  Hi, I\'m Rathnam S — a software engineer and full-stack');
+        appendOutput('  developer focused on AI/ML, developer tools, and');
+        appendOutput('  data-driven applications. I build modern web products,');
+        appendOutput('  experiment with LLM workflows, and ship practical');
+        appendOutput('  projects across Python, TypeScript, and Rust.');
         appendOutput('');
-        appendOutput('  I love clean code, developer tooling, and solving');
-        appendOutput('  complex problems with elegant solutions. When not');
-        appendOutput('  coding, you\'ll find me exploring new technologies,');
-        appendOutput('  contributing to open source, or reading tech blogs.');
+        appendOutput('  I enjoy clean architecture, open-source collaboration,');
+        appendOutput('  and solving real problems with thoughtful engineering.');
         appendOutput('</span>');
         appendOutput('');
         appendOutput('<span class="output-subheader">Education</span>');
@@ -751,20 +749,19 @@
         appendOutput('</span>');
         appendOutput('');
         appendOutput('<span class="output-subheader">Experience</span>');
-        appendOutput('<span class="muted-text">  Currently seeking full-time opportunities.</span>');
-        appendOutput('<span class="muted-text">  Open to internships and freelance projects.</span>');
+        appendOutput('<span class="muted-text">  Currently seeking software engineering opportunities.</span>');
+        appendOutput('<span class="muted-text">  Open to internships, entry-level full-time roles, and freelance collaborations.</span>');
       }
 
       function showSkills() {
         appendOutput('<span class="output-header">Technical Skills & Tech Stack</span>');
         
         const skills = {
-          'Frontend': ['React', 'TypeScript', 'Next.js', 'Remix', 'Vite', 'Tailwind CSS', 'HTML5/CSS3', 'JavaScript (ES6+)'],
-          'Backend': ['Node.js', 'Express', 'Python', 'FastAPI', 'Supabase', 'PostgreSQL', 'REST APIs', 'WebSockets'],
-          'AI/ML': ['PyTorch', 'Hugging Face Transformers', 'BERT', 'CNN', 'RAG', 'ChromaDB', 'Groq API', 'LangChain', 'OpenCV'],
-          'DevOps & Tools': ['Docker', 'Git/GitHub', 'GitHub Actions', 'CI/CD', 'Vercel', 'Linux', 'Bun', 'CircuitJS'],
-          'Data Structures & Algorithms': ['C++', 'Python', 'TypeScript', 'LeetCode/NeetCode (100+ problems)'],
-          'Other': ['System Design', 'Microservices', 'Agile/Scrum', 'Prompt Engineering', 'Embedded Systems (CubeSat EPS)']
+          'Frontend & Full-Stack': ['React', 'TypeScript', 'Next.js', 'Vite', 'Tailwind CSS', 'Tauri', 'HTML5/CSS3', 'JavaScript (ES6+)'],
+          'Backend & Data': ['Python', 'Django', 'Node.js', 'REST APIs', 'Kafka', 'Node-RED', 'InfluxDB', 'Supabase'],
+          'AI/ML & LLM': ['PyTorch', 'Transformer Architecture', 'LLM Fine-Tuning (Qwen)', 'NLP Pipelines', 'Model Evaluation', 'Prompt Engineering'],
+          'Developer Tools & Open Source': ['Git/GitHub', 'GitHub Actions', 'Docker', 'Vitest', 'Playwright', 'CLI Workflows'],
+          'Systems & Scientific Computing': ['Rust', 'CircuitJS/SPICE Simulation', 'Embedded Power-System Modeling', 'Time-Series Signal Processing']
         };
 
         Object.entries(skills).forEach(([category, items]) => {
@@ -780,47 +777,54 @@
         
         const projects = [
           {
-            name: 'apple-news-app — Next.js News Aggregator',
-            desc: 'Full-stack news application built with Next.js 14, TypeScript, and Tailwind CSS. Features server-side rendering, API routes, and automated CI/CD with GitHub Actions. Deployed on Vercel with 116 commits showing active development.',
+            name: 'apple-news-app',
+            desc: 'News app built with Next.js and TypeScript, deployed on Vercel. Demonstrates modern frontend architecture, routing, and production deployment workflow.',
             links: [
               { label: 'GitHub', url: 'https://github.com/RathnamS089/apple-news-app' },
               { label: 'Live Demo', url: 'https://apple-news-app.vercel.app' }
             ]
           },
           {
-            name: 'Multi-Domain AI Support Agent (CLI)',
-            desc: 'HackerRank Orchestrate Hackathon submission. Secure RAG pipeline with ChromaDB, Groq API (Llama-3.1), and metadata firewall preventing cross-domain data leakage. Features zero-temperature anti-hallucination guardrails, strict JSON schema enforcement, and fraud/red-flag triage. Built with Python, LangChain, and Rich for terminal UI.',
+            name: 'touch_grass',
+            desc: 'Desktop wellness companion built with React, TypeScript, Tauri, and Rust. Focused on screen-time tracking, break recommendations, and local app orchestration.',
             links: [
-              { label: 'GitHub', url: 'https://github.com/RathnamS089/cli' }
+              { label: 'GitHub', url: 'https://github.com/RathnamS089/touch_grass' }
             ]
           },
           {
-            name: 'BERT Fine-Tuning on CoLA Dataset',
-            desc: 'End-to-end PyTorch pipeline for fine-tuning bert-base-uncased on the Corpus of Linguistic Acceptability. Implements cross-platform hardware acceleration (CUDA/MPS/CPU), automated data downloading, AdamW optimizer with warmup scheduling, gradient clipping, and detailed training statistics via Pandas.',
+            name: 'secondmind',
+            desc: 'Local-first personal AI memory assistant built with Django and Ollama. Implements memory storage, semantic retrieval, and context-aware chat workflows.',
             links: [
-              { label: 'GitHub', url: 'https://github.com/RathnamS089/BERT-Fine-Tuning-on-the-CoLA-Dataset' }
+              { label: 'GitHub', url: 'https://github.com/RathnamS089/secondmind' }
             ]
           },
           {
-            name: 'MNIST Digit Classifier — MLP vs CNN',
-            desc: 'PyTorch deep learning project demonstrating the evolution from a Linear Multi-Layer Perceptron (96.67% accuracy) to a Convolutional Neural Network (98.56% accuracy), cutting error rate by more than half. Covers backpropagation, gradient descent, max pooling, spatial generalization, and feature extraction.',
+            name: 'neetcode-gpt',
+            desc: 'GPT implementation built from scratch while completing the NeetCode ML curriculum, including attention, transformer blocks, tokenization, and training loops.',
             links: [
-              { label: 'GitHub', url: 'https://github.com/RathnamS089/mint-digit-classifier' }
+              { label: 'GitHub', url: 'https://github.com/RathnamS089/neetcode-gpt' }
             ]
           },
           {
-            name: 'Minimal CubeSat EPS Circuit Simulation',
-            desc: 'Electrical Power Subsystem simulation for a CubeSat, built in CircuitJS1 (browser-based SPICE). Designed custom RC timer circuits and MOSFET switches from scratch to model 90-minute orbit cycles (60min sun / 30min eclipse) with three distinct loads (OBC, Payload, TT&C). Demonstrates embedded systems and circuit design fundamentals.',
+            name: 'fintuneqwen0.5B',
+            desc: 'Configuration-driven workflow for preparing datasets and fine-tuning Qwen 0.5B models on accessible hardware, covering preprocessing, training, and evaluation steps.',
+            links: [
+              { label: 'GitHub', url: 'https://github.com/RathnamS089/fintuneqwen0.5B' }
+            ]
+          },
+          {
+            name: 'ecg-ingestion',
+            desc: 'Real-time ECG ingestion pipeline using a Python producer, Apache Kafka, Node-RED processing, and InfluxDB storage for time-series visualization.',
+            links: [
+              { label: 'GitHub', url: 'https://github.com/RathnamS089/ecg-ingestion' }
+            ]
+          },
+          {
+            name: 'Minimal-EPS-circuit-',
+            desc: 'Minimal CubeSat electrical power subsystem simulation in CircuitJS1. Models orbit-based charge/discharge behavior with custom RC timers and MOSFET switching.',
             links: [
               { label: 'GitHub', url: 'https://github.com/RathnamS089/Minimal-EPS-circuit-' },
               { label: 'Results', url: 'https://github.com/RathnamS089/Minimal-EPS-circuit-/blob/main/RESULTS.md' }
-            ]
-          },
-          {
-            name: 'Pokédex TypeScript — React + Vite',
-            desc: 'Modern React 18 + TypeScript + Vite Pokédex application. Configured with Oxlint for fast linting, strict TypeScript settings, and component-based architecture. Demonstrates modern frontend tooling and API integration patterns.',
-            links: [
-              { label: 'GitHub', url: 'https://github.com/RathnamS089/pokedex-ts' }
             ]
           }
         ];
